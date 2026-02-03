@@ -5,47 +5,41 @@ pipeline {
         maven 'Maven-3.9.12'
     }
 
-    environment {
-        TOMCAT_URL = 'http://localhost:9090'
-        TOMCAT_CREDENTIALS = credentials('tomcat-creds')
-    }
-
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git 'https://github.com/daticahealth/java-tomcat-maven-example.git'
+                git branch: 'master',
+                    url: 'https://github.com/Leogabriele/java-tomcat-maven-example.git'
             }
         }
 
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                bat 'mvn clean package'
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'
+                bat 'mvn test'
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
-                sh """
-                curl -u $TOMCAT_CREDENTIALS_USR:$TOMCAT_CREDENTIALS_PSW \
-                -T target/*.war \
-                $TOMCAT_URL/manager/text/deploy?path=/demoapp&update=true
-                """
+                bat '''
+                copy target\\*.war C:\\apache-tomcat-9.0\\webapps\\
+                '''
             }
         }
     }
 
     post {
-        success {
-            echo 'Deployment successful!'
-        }
         failure {
             echo 'Build or deploy failed!'
+        }
+        success {
+            echo 'Build and deployment successful!'
         }
     }
 }

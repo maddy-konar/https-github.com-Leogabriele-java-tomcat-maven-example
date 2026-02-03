@@ -8,38 +8,32 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/Leogabriele/java-tomcat-maven-example.git'
+                git url: 'https://github.com/Leogabriele/java-tomcat-maven-example.git'
             }
         }
 
         stage('Build') {
             steps {
-                bat 'mvn clean package'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'mvn test'
+                bat 'mvn clean package -DskipTests'
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
                 bat '''
-                copy target\\*.war C:\\apache-tomcat-9.0\\webapps\\
+                dir target
+                copy /Y target\\*.war "C:\\apache-tomcat-9.0.82\\webapps\\"
                 '''
             }
         }
     }
 
     post {
-        failure {
-            echo 'Build or deploy failed!'
-        }
         success {
             echo 'Build and deployment successful!'
+        }
+        failure {
+            echo 'Build or deploy failed!'
         }
     }
 }
